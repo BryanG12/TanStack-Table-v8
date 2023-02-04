@@ -1,5 +1,6 @@
 
-const Layout = ({ children }) => {
+
+export const Layout = ({ children }) => {
   return (
     <div>
       <header className="bg-gray-900 shadow">
@@ -16,5 +17,3 @@ const Layout = ({ children }) => {
     </div>
   );
 };
-
-export default Layout;

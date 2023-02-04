@@ -1,81 +1,47 @@
-import React, { useState } from 'react';
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  getPaginationRowModel
-} from '@tanstack/react-table';
-import { defaultData } from '../utils/data';
+import { useCallback, useMemo, useState } from "react";
+import fetchUsers from "../utils/dataFetch";
+import { Table } from "./Table";
 
 
-const DataTable = () => {
+export const DataTable = () => {
 
-  const [data, setData] = useState(defaultData);
 
-  const columns = [
+  const [isLoading, setIsLoading] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [pageCount, setPageCount] = useState(0);
+
+  const fetchData = useCallback(async function (page) {
+    setIsLoading(true);
+    const json = await fetchUsers(page + 1);
+    setUsers(json.data);
+    setPageCount(json.total_pages);
+    setIsLoading(false);
+  }, []);
+
+  const columns = useMemo(() => [
     {
-      accessorKey: 'name',
-      header: 'Nombre'
+      accessorKey: "id",
+      header: () => <span>ID</span>,
     },
     {
-      accessorKey: 'lastName',
-      header: 'Apellido'
+      accessorKey: "email",
+      header: () => <span>Correo</span>,
     },
     {
-      accessorKey: 'age',
-      header: 'años'
+      accessorKey: "first_name",
+      header: () => <span>Nombre</span>,
     },
-    {
-      accessorKey: 'status',
-      header: 'Nombre'
-    },
-  ]
-
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel()
-  })
+  ]);
 
   return (
-    <div className='px-6 py-4'>
-      <table className='table-auto w-full'>
-        <thead>
-          {table.getHeaderGroups().map(headerGroup => (
-            <tr key={headerGroup.id} className="border-b border-gray-300 text-gray-600 bg-gray-100" >
-              {headerGroup.headers.map(header => (
-                <th key={header.id} className="py-2 px-4 text-left uppercase">
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )
-                  }
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map(row => (
-            <tr key={row.id} className="text-gray-600 hover:bg-slate-100" >
-              {row.getVisibleCells().map(cell => (
-                <td key={cell.id} className="py-2 px-4" >
-                  {flexRender(
-                    cell.column.columnDef.cell,
-                    cell.getContext()
-                  )}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
+    <div className="px-6 py-4">
+      <Table
+        columns={columns}
+        data={users}
+        fetchData={fetchData}
+        pageCount={pageCount}
+      />
+      <div>{isLoading && <div>Cargando...</div>}</div>
     </div>
   );
 };
-
-export default DataTable;
